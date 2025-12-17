@@ -9,6 +9,14 @@ from core.module_loader import ModuleLoader
 from core.orm.registry import Registry
 from core.release import version
 
+import logging
+
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
 # Global DB Pool (Simple)
 db_connection = None
 

@@ -70,6 +70,37 @@ Requiere Python 3.10+ y PostgreSQL corriendo localmente.
     pytest tests/
     ```
 
+## Seguridad y Autenticación
+
+El sistema utiliza **API Keys** para la autenticación.
+
+### Obtener la API Key de Admin
+Al iniciar el contenedor, la API Key del usuario Administrador se imprime en los logs:
+
+```bash
+docker compose logs web | grep "Admin API Key"
+# Output example: INFO - Admin API Key: b5b35ff6-fb1e-4645-a440-82be2f76c5f6
+```
+
+### Consumir la API
+Debes incluir el header `x-api-key` en tus peticiones.
+
+**Ejemplo con cURL:**
+```bash
+curl -X GET http://localhost:8000/library/books \
+     -H "x-api-key: TU_API_KEY"
+```
+
+Si no se envía el header, el sistema puede comportarse como usuario público o Anonimo (dependiendo de la configuración). Si se envía una clave inválida, retornará `401 Unauthorized`.
+
+## Módulos de Ejemplo
+
+### Library
+Un módulo simple para gestión de libros.
+- **GET** `/library/books`: Listar libros.
+- **POST** `/library/books`: Crear libro (Body JSON: `{"name": "Title", "pages": 100}`).
+- **PUT** `/library/books/{id}`: Actualizar libro.
+- **DELETE** `/library/books/{id}`: Eliminar libro.
+
 ## Documentación Adicional
 - [Tutorial de Creación de Módulos](docs/tutorial.md)
-# fastapi_fast_framework

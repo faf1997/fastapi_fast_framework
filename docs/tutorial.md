@@ -3,7 +3,19 @@
 Este tutorial te guiará paso a paso para crear un nuevo módulo en nuestro sistema, similar a Odoo 17.
 Vamos a crear un módulo de ejemplo llamado `Library` para gestionar libros.
 
-## Estructura de un Módulo
+## 4. Seguridad (Nuevo)
+
+Para que un usuario pueda acceder a tu módulo via API, asegúrate de:
+1.  Tener una **API Key** válida (ver README).
+2.  Tener permisos de acceso en `ir.model.access` para los modelos que intenta consultar.
+    - Ejemplo SQL para dar permisos totales al usuario ID 2 sobre `library.book`:
+      ```sql
+      INSERT INTO ir_model_access (model_id, user_id, perm_read, perm_write, perm_create, perm_unlink) 
+      VALUES ('library.book', 2, true, true, true, true);
+      ```
+
+## 5. Profundizando
+e un Módulo
 Cada módulo reside en su propia carpeta dentro del directorio `modules/`.
 La estructura mínima es:
 ```

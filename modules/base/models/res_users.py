@@ -39,6 +39,31 @@ class ResUsers(BaseModel):
                 'name': 'Administrator',
                 'login': 'admin',
                 'password': 'admin',
-                'partner_id': partner.ids[0]
+                'partner_id': partner.ids[0],
+                'api_key': 'admin' # Default for dev simplicity, or use uuid
             })
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("--------------------------------------------------")
+            logger.info("Admin User Created")
+            logger.info("Login: admin")
+            logger.info("Password: admin")
+            logger.info("API Key: admin")
+            logger.info("--------------------------------------------------")
+        else:
+            # Check/Set API Key if missing for existing admin
+            admin = cls(env).browse([1])
+            if not admin.api_key:
+                import uuid
+                new_key = str(uuid.uuid4())
+                admin.write({'api_key': new_key})
+                key_to_show = new_key
+            else:
+                key_to_show = admin.api_key
+            
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("--------------------------------------------------")
+            logger.info(f"Admin API Key: {key_to_show}")
+            logger.info("--------------------------------------------------")
 
