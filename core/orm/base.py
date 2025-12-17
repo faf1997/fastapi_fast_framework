@@ -9,26 +9,53 @@ class MetaModel(type):
         super(MetaModel, cls).__init__(name, bases, attrs)
         
         # Handle Extension
+        if hasattr(cls, '_is_composed_model'):
+             return
+
         if hasattr(cls, '_inherit') and cls._inherit:
              existing_model = Registry.get(cls._inherit)
              if existing_model:
-                 # Monkey Patch existing model
-                 # 1. Add new fields
-                 for attr_name, attr_value in attrs.items():
-                     if isinstance(attr_value, Field):
-                         setattr(existing_model, attr_name, attr_value)
-                         attr_value.name = attr_name
-                         attr_value.model_name = existing_model._name
-                     # 2. Add methods (exclude magic ones unless intended, but generally overwrite)
-                     elif callable(attr_value) and not attr_name.startswith('__'):
-                         setattr(existing_model, attr_name, attr_value)
+                 # INHERITANCE COMPOSITION STRATEGY
+                 # Instead of monkey-patching, we create a new class that inherits 
+                 # from BOTH the new definition (cls) and the existing model.
+                 # This ensures MRO is [NewClass, OldClass, Bases...] so super() works.
                  
-                 # Do NOT register this class as a new model
+                 # New class name based on extension to avoid conflicts
+                 # But we register it under the ORIGINAL name.
+                 
+                 # We dynamically create a new class that mixes them.
+                 # The 'cls' here is the class defined in the module (e.g. LogExtension1).
+                 # We want the final entry in registry to be a class that has 'cls' as base
+                 # and 'existing_model' as next base.
+                 
+                 # Construct the new class
+                 # Name it consistent with the original to keep __name__ sane-ish? 
+                 # Or use the extension name? Let's use the extension name but register it to original key.
+                 
+                 # Note: cls already inherits from BaseModel (usually). 
+                 # existing_model also inherits from BaseModel.
+                 # MRO will be: NewCombined -> cls -> existing_model -> BaseModel
+                 
+                 # We need to construct a new type that inherits from (cls, existing_model)
+                 # Wait, 'cls' is the class currently being created by this type() call.
+                 # We can't really change its bases *easily* inside __init__ without some magic, 
+                 # BUT we can register a *Different* class than 'cls'.
+                 
+                 # Actually, we can just say: The 'cls' we just created is NOT the final model.
+                 # The final model is a mixin of (cls, existing_model).
+                 
+                 new_bases = (cls, existing_model)
+                 new_class = type(existing_model.__name__, new_bases, {'_is_composed_model': True})
+                 
+                 # Ensure _name and _table persist from the original if not overwritten
+                 if not hasattr(new_class, '_table'):
+                     new_class._table = existing_model._table
+                     
+                 # Update Registry with this new composite class
+                 Registry.add(cls._inherit, new_class)
+                 
                  return
              else:
-                 # Inherit but model not found? Wait, maybe it's not loaded yet.
-                 # For MVP we assume topological sort loads dependencies first.
-                 # If not found, we act as if it's a new model if _name is set.
                  pass
 
         if hasattr(cls, '_name') and cls._name:
