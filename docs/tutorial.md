@@ -31,6 +31,18 @@ class ResUsersExtension(BaseModel):
 ```
 Esto agregará automáticamente el campo `github_profile` a la tabla `res_users` existente.
 
+### Herencia Múltiple (Mixins)
+También puedes heredar de múltiples modelos pasando una lista a `_inherit`. Esto es útil para composiciones tipo Mixin.
+
+```python
+class ModelExtension(BaseModel):
+    _inherit = ['target.model', 'mixin.model']
+
+    def method(self):
+        # MRO: ModelExtension -> TargetModel -> MixinModel -> BaseModel
+        return super().method()
+```
+
 ## 6. Profundizando
 e un Módulo
 Cada módulo reside en su propia carpeta dentro del directorio `modules/`.

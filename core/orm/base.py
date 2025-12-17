@@ -13,46 +13,45 @@ class MetaModel(type):
              return
 
         if hasattr(cls, '_inherit') and cls._inherit:
-             existing_model = Registry.get(cls._inherit)
-             if existing_model:
+             inherit_models = cls._inherit
+             if isinstance(inherit_models, str):
+                 inherit_models = [inherit_models]
+             
+             parents = []
+             primary_key = inherit_models[0]
+             
+             for model_name in inherit_models:
+                 existing_model = Registry.get(model_name)
+                 if existing_model:
+                     parents.append(existing_model)
+                 else:
+                     # Warn or ignore? For now ignore. 
+                     # But if primary is missing we can't extend it.
+                     pass
+            
+             if parents:
                  # INHERITANCE COMPOSITION STRATEGY
-                 # Instead of monkey-patching, we create a new class that inherits 
-                 # from BOTH the new definition (cls) and the existing model.
-                 # This ensures MRO is [NewClass, OldClass, Bases...] so super() works.
+                 # New bases: (cls, parent1, parent2, ...)
+                 # MRO: cls -> parent1 -> parent2 -> BaseModel
                  
-                 # New class name based on extension to avoid conflicts
-                 # But we register it under the ORIGINAL name.
+                 new_bases = tuple([cls] + parents)
                  
-                 # We dynamically create a new class that mixes them.
-                 # The 'cls' here is the class defined in the module (e.g. LogExtension1).
-                 # We want the final entry in registry to be a class that has 'cls' as base
-                 # and 'existing_model' as next base.
+                 # The name of the new composed class should probably reflect its purpose
+                 # But we reuse the primary model's name to mimic "in-place update".
+                 primary_model = parents[0]
                  
-                 # Construct the new class
-                 # Name it consistent with the original to keep __name__ sane-ish? 
-                 # Or use the extension name? Let's use the extension name but register it to original key.
+                 new_class = type(primary_model.__name__, new_bases, {'_is_composed_model': True})
                  
-                 # Note: cls already inherits from BaseModel (usually). 
-                 # existing_model also inherits from BaseModel.
-                 # MRO will be: NewCombined -> cls -> existing_model -> BaseModel
-                 
-                 # We need to construct a new type that inherits from (cls, existing_model)
-                 # Wait, 'cls' is the class currently being created by this type() call.
-                 # We can't really change its bases *easily* inside __init__ without some magic, 
-                 # BUT we can register a *Different* class than 'cls'.
-                 
-                 # Actually, we can just say: The 'cls' we just created is NOT the final model.
-                 # The final model is a mixin of (cls, existing_model).
-                 
-                 new_bases = (cls, existing_model)
-                 new_class = type(existing_model.__name__, new_bases, {'_is_composed_model': True})
-                 
-                 # Ensure _name and _table persist from the original if not overwritten
+                 # Ensure _table persists from the primary model
                  if not hasattr(new_class, '_table'):
-                     new_class._table = existing_model._table
+                     new_class._table = primary_model._table
                      
-                 # Update Registry with this new composite class
-                 Registry.add(cls._inherit, new_class)
+                 # Update Registry. 
+                 # We update the primary key to point to the new composed class.
+                 Registry.add(primary_key, new_class)
+                 
+                 # Note: Intermediate mixins in standard Odoo are Abstract and might not be used directly
+                 # except via this composition. 
                  
                  return
              else:
