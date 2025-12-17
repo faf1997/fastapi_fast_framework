@@ -49,6 +49,13 @@ class Field:
         self.name = name
         self.model_name = owner._name
 
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        vals = instance.read([self.name])
+        return vals[0][self.name] if vals else False
+
+
 class Char(Field):
     type = 'char'
 

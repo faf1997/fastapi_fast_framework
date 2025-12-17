@@ -1,6 +1,7 @@
 from .registry import Registry
 from .fields import *
 import psycopg2
+import psycopg2.extras
 from psycopg2 import sql
 
 class MetaModel(type):
@@ -19,9 +20,11 @@ class BaseModel(metaclass=MetaModel):
         self.env = env
         self.ids = list(ids) if isinstance(ids, (list, tuple)) else [ids]
         self._fields = {}
-        # Simple field introspection
-        for attr_name in dir(self):
-            val = getattr(self, attr_name)
+        self._fields = {}
+        # Simple field introspection from Class (to return Field objects, not values)
+        cls = self.__class__
+        for attr_name in dir(cls):
+            val = getattr(cls, attr_name, None)
             if isinstance(val, Field):
                 self._fields[attr_name] = val
                 val.name = attr_name
@@ -35,6 +38,18 @@ class BaseModel(metaclass=MetaModel):
 
     def __bool__(self):
         return bool(self.ids)
+
+    @property
+    def id(self):
+        return self.ids[0] if self.ids else False
+
+    def __getattr__(self, name):
+        if name in self._fields:
+            if len(self) != 1:
+                raise ValueError(f"Expected singleton: {self}")
+            vals = self.read([name])
+            return vals[0][name] if vals else False
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
 
     def check_access_rights(self, operation, raise_exception=True):
