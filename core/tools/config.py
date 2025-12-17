@@ -7,5 +7,7 @@ class Config:
     DB_HOST = os.getenv("DB_HOST", "localhost")
     DB_PORT = os.getenv("DB_PORT", "5432")
     MODULES_PATH = os.getenv("MODULES_PATH", "modules")
+    DB_POOL_MIN = int(os.getenv("DB_POOL_MIN", 5))
+    DB_POOL_MAX = int(os.getenv("DB_POOL_MAX", 20))
 
 config = Config()

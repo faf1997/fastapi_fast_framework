@@ -11,68 +11,52 @@ from core.release import version
 
 import logging
 
+from core.database import Database
+
 # Configure Logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
-# Global DB Pool (Simple)
-db_connection = None
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global db_connection
     try:
-        db_connection = psycopg2.connect(
-            dbname=config.DB_NAME,
-            user=config.DB_USER,
-            password=config.DB_PASSWORD,
-            host=config.DB_HOST,
-            port=config.DB_PORT
-        )
-        # Initialize Modules
-        with db_connection.cursor() as cr:
-            # Create a supervisor env
-            env = Environment(cr, 1, {}) 
-            loader = ModuleLoader(config.MODULES_PATH)
-            loader.load_modules(env)
-
-        # Register Routes from loaded modules
-        for router in loader.get_routers():
-            app.include_router(router)
-
-            db_connection.commit()
+        Database.initialize()
+        
+        # Initialize Modules using a dedicated connection
+        conn = Database.get_connection()
+        try:
+            with conn.cursor() as cr:
+                # Create a supervisor env
+                env = Environment(cr, 1, {}) 
+                loader = ModuleLoader(config.MODULES_PATH)
+                loader.load_modules(env)
+            
+            # Register Routes from loaded modules
+            for router in loader.get_routers():
+                app.include_router(router)
+                
+            conn.commit()
+        finally:
+            Database.return_connection(conn)
             
         yield
     except Exception as e:
         print(f"Startup failed: {e}")
-        # In production this should stop the server, but for dev we let it run or raise
         raise e
     finally:
         # Shutdown
-        if db_connection:
-            db_connection.close()
+        Database.close_all()
 
 app = FastAPI(title="Odoo-like Core", lifespan=lifespan)
 
 @app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
-    # Create a new cursor for each request
-    # NOTE: In a real app, use a connection pool (e.g. psycopg2.pool)
-    # Here we are reusing the single connection which is NOT thread safe for async FastAPI 
-    # if we have multiple workers or concurrent requests.
-    # For this MVP simulation, we should really create a new connection or use valid pool.
-    # Let's create a new connection per request for safety now, or assume single worker.
-    # To keep it simple and correct:
-    conn = psycopg2.connect(
-            dbname=config.DB_NAME,
-            user=config.DB_USER,
-            password=config.DB_PASSWORD,
-            host=config.DB_HOST,
-            port=config.DB_PORT
-    )
+    # Get connection from Pool
+    # This is non-blocking (in threading sense, but still efficient)
+    conn = Database.get_connection()
     request.state.conn = conn
 
     # Auth Logic
@@ -94,22 +78,11 @@ async def db_session_middleware(request: Request, call_next):
         finally:
              cur.close()
     
-    # If no valid user, default to None or Raise 401?
-    # For Odoo-like behavior, if public, maybe user_id=None (Public user?)
-    # For this secure implementation, let's enforce it for library routes
-    
-    # Store user_id in state for controllers to use
-    request.state.user_id = user_id or 1 # Fallback to admin for dev convenience if no key? 
-    # USER REQUESTED SECURITY: So let's be strict if key provided but wrong?
-    # Let's keep ID 1 fallback ONLY if no key provided for backwards compat, 
-    # BUT if key provided and wrong -> 401.
+    request.state.user_id = user_id or 1 
     
     if api_key and not user_id:
+         Database.return_connection(conn) # Important: return early
          return JSONResponse(status_code=401, content={"message": "Invalid API Key"})
-
-    # If strict mode desired:
-    # if not user_id and not request.url.path in ["/", "/docs", "/openapi.json"]:
-    #    return JSONResponse(status_code=401, content={"message": "Missing API Key"})
 
     try:
         response = await call_next(request)
@@ -119,7 +92,8 @@ async def db_session_middleware(request: Request, call_next):
         conn.rollback()
         raise e
     finally:
-        conn.close()
+        # Return connection to pool
+        Database.return_connection(conn)
 
 @app.get("/")
 def read_root():

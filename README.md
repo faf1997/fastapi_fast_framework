@@ -53,6 +53,14 @@ environment:
 ```
 **Nota:** Al configurar `WORKERS > 1`, la funcionalidad de auto-reload se desactiva.
 
+### Optimización de Base de Datos
+El núcleo implementa automáticamente un **Connection Pool** (`psycopg2.pool`).
+Puedes ajustar su tamaño con las variables de entorno:
+- `DB_POOL_MIN` (Por defecto: 5)
+- `DB_POOL_MAX` (Por defecto: 20)
+
+Esto permite manejar alta concurrencia sin saturar conexiones TCP a PostgreSQL.
+
 ## Ejecutar Tests
 
 ### Opción A: Dentro del Contenedor (Facil)
