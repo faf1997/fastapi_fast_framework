@@ -14,7 +14,7 @@ Este proyecto es un framework backend modular inspirado en Odoo, construido con 
 Para levantar la aplicación y la base de datos:
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 La API estará disponible en: [http://localhost:8000](http://localhost:8000)
 
