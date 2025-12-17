@@ -13,6 +13,7 @@ services:
       - DB_USER=odoo
       - DB_PASSWORD=odoo
       - MODULES_PATH=modules
+      - PYTHONUNBUFFERED=1
     depends_on:
       - db
 

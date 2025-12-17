@@ -83,9 +83,16 @@ class ModuleLoader:
                 cls._auto_init(env)
 
         # Bootstrap Admin
+        # logger.info(f"Registry models: {list(Registry.models().keys())}")
         ResUsers = Registry.get('res.users')
-        if ResUsers and hasattr(ResUsers, '_bootstrap_admin'):
-             logger.info("Bootstrapping Admin User")
-             ResUsers._bootstrap_admin(env)
+        if ResUsers:
+             # logger.info(f"ResUsers found: {ResUsers}")
+             if hasattr(ResUsers, '_bootstrap_admin'):
+                 logger.info("Bootstrapping Admin User")
+                 ResUsers._bootstrap_admin(env)
+             else:
+                 logger.error("ResUsers has no _bootstrap_admin")
+        else:
+             logger.error("ResUsers NOT found in Registry")
 
 

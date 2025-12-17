@@ -26,6 +26,17 @@ class BaseModel(metaclass=MetaModel):
                 self._fields[attr_name] = val
                 val.name = attr_name
 
+    def __len__(self):
+        return len(self.ids)
+
+    def __iter__(self):
+        for id in self.ids:
+            yield self.browse([id])
+
+    def __bool__(self):
+        return bool(self.ids)
+
+
     def check_access_rights(self, operation, raise_exception=True):
         """
         Check access rights for the operation.
@@ -42,7 +53,7 @@ class BaseModel(metaclass=MetaModel):
             WHERE model_id = %s AND user_id = %s
         """.format(op=operation)
         
-        with self.env.cr.cursor() as cur:
+        with self.env.cr.connection.cursor() as cur:
             cur.execute(query, (self._name, self.env.uid))
             res = cur.fetchone()
             
@@ -79,7 +90,7 @@ class BaseModel(metaclass=MetaModel):
                 params.append(value)
             query += sql.SQL("").join(where_clauses)
             
-        with self.env.cr.cursor() as cur:
+        with self.env.cr.connection.cursor() as cur:
             cur.execute(query, params)
             res = cur.fetchall()
             return self.browse([r[0] for r in res])
@@ -107,7 +118,7 @@ class BaseModel(metaclass=MetaModel):
             sql.SQL(', ').join(map(sql.SQL, placeholders))
         )
         
-        with self.env.cr.cursor() as cur:
+        with self.env.cr.connection.cursor() as cur:
             cur.execute(query, values)
             new_id = cur.fetchone()[0]
             
@@ -139,7 +150,7 @@ class BaseModel(metaclass=MetaModel):
         )
         values.append(tuple(self.ids))
         
-        with self.env.cr.cursor() as cur:
+        with self.env.cr.connection.cursor() as cur:
             cur.execute(query, values)
             
         return True
@@ -149,7 +160,7 @@ class BaseModel(metaclass=MetaModel):
         if not self.ids:
             return True
         query = sql.SQL("DELETE FROM {} WHERE id IN %s").format(sql.Identifier(self._table_name))
-        with self.env.cr.cursor() as cur:
+        with self.env.cr.connection.cursor() as cur:
             cur.execute(query, (tuple(self.ids),))
         return True
 
@@ -166,7 +177,7 @@ class BaseModel(metaclass=MetaModel):
             sql.Identifier(self._table_name)
         )
         
-        with self.env.cr.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        with self.env.cr.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(query, (tuple(self.ids),))
             return cur.fetchall()
 
@@ -174,7 +185,7 @@ class BaseModel(metaclass=MetaModel):
     def _auto_init(cls, env):
         # Naive migration strategy
         table_name = cls._table or cls._name.replace('.', '_')
-        with env.cr.cursor() as cur:
+        with env.cr.connection.cursor() as cur:
             # Check if table exists
             cur.execute("SELECT to_regclass(%s)", (table_name,))
             if not cur.fetchone()[0]:
