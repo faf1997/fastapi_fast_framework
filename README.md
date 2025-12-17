@@ -41,6 +41,18 @@ El sistema detecta automáticamente los módulos ubicados en la carpeta `modules
 2. Reinicia el servicio.
    > **Nota**: Actualmente, esto **no** elimina las tablas de la base de datos para preservar datos. Si deseas limpiar la DB, debes eliminar las tablas manualmente vía SQL.
 
+## Configuración Avanzada
+
+### Concurrencia (Workers)
+Puedes ajustar el número de workers de Uvicorn modificando la variable `WORKERS` en `docker-compose.yml`.
+Por defecto es `1`. Para entornos de producción o pruebas de carga, auméntalo según los núcleos de tu CPU.
+
+```yaml
+environment:
+  - WORKERS=4
+```
+**Nota:** Al configurar `WORKERS > 1`, la funcionalidad de auto-reload se desactiva.
+
 ## Ejecutar Tests
 
 ### Opción A: Dentro del Contenedor (Facil)

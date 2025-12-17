@@ -14,6 +14,7 @@ services:
       - DB_PASSWORD=odoo
       - MODULES_PATH=modules
       - PYTHONUNBUFFERED=1
+      - WORKERS=4
     depends_on:
       - db
 
