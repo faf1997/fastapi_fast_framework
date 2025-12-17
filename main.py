@@ -7,6 +7,7 @@ from core.tools.config import config
 from core.orm.environment import Environment
 from core.module_loader import ModuleLoader
 from core.orm.registry import Registry
+from core.release import version
 
 # Global DB Pool (Simple)
 db_connection = None
