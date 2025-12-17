@@ -2,6 +2,7 @@ import os
 import ast
 import importlib.util
 import logging
+import sys
 from .orm.registry import Registry
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class ModuleLoader:
         spec = importlib.util.spec_from_file_location(module_name, os.path.join(module_path, '__init__.py'))
         if spec and spec.loader:
             module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
             spec.loader.exec_module(module)
 
     def _init_models(self, env):
