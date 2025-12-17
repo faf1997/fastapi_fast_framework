@@ -5,7 +5,8 @@ def test_admin_bootstrap(env_test):
     admin = User.search([('id', '=', 1)])
     assert admin, "Admin user should exist"
     assert len(admin) == 1
-    admin_rec = User.browse(admin)
+    assert len(admin) == 1
+    admin_rec = admin
     assert admin_rec.login == 'admin'
     assert admin_rec.name == 'Administrator'
 

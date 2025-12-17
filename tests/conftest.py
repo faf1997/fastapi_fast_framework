@@ -37,5 +37,5 @@ def test_cursor(db_conn):
     return conn.cursor()
 
 @pytest.fixture
-def env_test(test_cursor):
+def env_test(env, test_cursor):
     return Environment(test_cursor, 1, {})

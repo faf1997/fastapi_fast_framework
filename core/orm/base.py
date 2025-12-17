@@ -7,6 +7,30 @@ from psycopg2 import sql
 class MetaModel(type):
     def __init__(cls, name, bases, attrs):
         super(MetaModel, cls).__init__(name, bases, attrs)
+        
+        # Handle Extension
+        if hasattr(cls, '_inherit') and cls._inherit:
+             existing_model = Registry.get(cls._inherit)
+             if existing_model:
+                 # Monkey Patch existing model
+                 # 1. Add new fields
+                 for attr_name, attr_value in attrs.items():
+                     if isinstance(attr_value, Field):
+                         setattr(existing_model, attr_name, attr_value)
+                         attr_value.name = attr_name
+                         attr_value.model_name = existing_model._name
+                     # 2. Add methods (exclude magic ones unless intended, but generally overwrite)
+                     elif callable(attr_value) and not attr_name.startswith('__'):
+                         setattr(existing_model, attr_name, attr_value)
+                 
+                 # Do NOT register this class as a new model
+                 return
+             else:
+                 # Inherit but model not found? Wait, maybe it's not loaded yet.
+                 # For MVP we assume topological sort loads dependencies first.
+                 # If not found, we act as if it's a new model if _name is set.
+                 pass
+
         if hasattr(cls, '_name') and cls._name:
             Registry.add(cls._name, cls)
 

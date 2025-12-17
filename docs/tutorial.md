@@ -14,7 +14,24 @@ Para que un usuario pueda acceder a tu módulo via API, asegúrate de:
       VALUES ('library.book', 2, true, true, true, true);
       ```
 
-## 5. Profundizando
+      ```
+
+## 5. Herencia y Extensión de Modelos
+Puedes extender modelos existentes (como `res.users` o `library.book`) desde otro módulo usando `_inherit`.
+
+### Ejemplo
+```python
+from core.orm.base import BaseModel
+from core.orm.fields import Char
+
+class ResUsersExtension(BaseModel):
+    _inherit = 'res.users'
+    
+    github_profile = Char(string="GitHub Profile")
+```
+Esto agregará automáticamente el campo `github_profile` a la tabla `res_users` existente.
+
+## 6. Profundizando
 e un Módulo
 Cada módulo reside en su propia carpeta dentro del directorio `modules/`.
 La estructura mínima es:

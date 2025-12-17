@@ -10,6 +10,9 @@ class BookCreate(BaseModel):
     active: Optional[bool] = True
     author_id: Optional[int] = None
     publisher_id: Optional[int] = None
+    
+    class Config:
+        extra = "allow"
 
 class BookUpdate(BaseModel):
     name: Optional[str] = None
@@ -19,6 +22,8 @@ class BookUpdate(BaseModel):
     author_id: Optional[int] = None
     publisher_id: Optional[int] = None
 
+    class Config:
+        extra = "allow"
 
 router = APIRouter(prefix="/library", tags=["Library"])
 
@@ -29,12 +34,9 @@ def get_books(request: Request):
     user_id = request.state.user_id
     env = Environment(conn.cursor(), user_id, {}) 
 
-    
-    books = env['library.book'].search([])
-    return [
-        {"id": b.id, "name": b.name, "isbn": b.isbn, "pages": b.pages} 
-        for b in books
-    ]
+    # Dynamic return using read() to include extended fields
+    records = env['library.book'].search([])
+    return records.read()
 
 @router.post("/books")
 def create_book(book: BookCreate, request: Request):
@@ -44,7 +46,8 @@ def create_book(book: BookCreate, request: Request):
     
     vals = book.model_dump(exclude_unset=True)
     new_book = env['library.book'].create(vals)
-    return {"id": new_book.id, "name": new_book.name}
+    # Return read() to show all fields including defaults and extensions
+    return new_book.read()[0]
 
 @router.put("/books/{book_id}")
 def update_book(book_id: int, book: BookUpdate, request: Request):
