@@ -11,6 +11,18 @@ class ModuleLoader:
     def __init__(self, modules_path):
         self.modules_path = modules_path
         self.modules = {}
+        self.loaded_modules = {}
+
+    def get_routers(self):
+        routers = []
+        for name, module in self.loaded_modules.items():
+            # Check if module has controllers submodule
+            if hasattr(module, 'controllers'):
+                controllers = module.controllers
+                if hasattr(controllers, 'router'):
+                     routers.append(controllers.router)
+        return routers
+
 
     def load_modules(self, env):
         self._discover_modules()
@@ -74,6 +86,7 @@ class ModuleLoader:
             module = importlib.util.module_from_spec(spec)
             sys.modules[module_name] = module
             spec.loader.exec_module(module)
+            self.loaded_modules[module_name] = module
 
     def _init_models(self, env):
         # Initialize tables
