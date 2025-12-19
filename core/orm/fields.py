@@ -71,6 +71,12 @@ class Float(Field):
 class Boolean(Field):
     type = 'boolean'
 
+class Selection(Field):
+    type = 'selection'
+    def __init__(self, selection, string=None, **kwargs):
+        super().__init__(string=string, **kwargs)
+        self.selection = selection
+
 class Many2one(Field):
     type = 'many2one'
     def __init__(self, comodel_name, string=None, **kwargs):

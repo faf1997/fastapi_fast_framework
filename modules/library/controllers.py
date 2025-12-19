@@ -10,7 +10,7 @@ class BookCreate(BaseModel):
     active: Optional[bool] = True
     author_id: Optional[int] = None
     publisher_id: Optional[int] = None
-    
+
     class Config:
         extra = "allow"
 
@@ -54,7 +54,7 @@ def update_book(book_id: int, book: BookUpdate, request: Request):
     conn = request.state.conn
     user_id = request.state.user_id
     env = Environment(conn.cursor(), user_id, {})
-    
+
     book_record = env['library.book'].browse([book_id])
     if not book_record:
         raise HTTPException(status_code=404, detail="Book not found")
@@ -68,11 +68,11 @@ def delete_book(book_id: int, request: Request):
     conn = request.state.conn
     user_id = request.state.user_id
     env = Environment(conn.cursor(), user_id, {})
-    
+
     book_record = env['library.book'].browse([book_id])
     if not book_record:
         raise HTTPException(status_code=404, detail="Book not found")
-        
+
     book_record.unlink()
     return {"success": True, "message": "Book deleted"}
 
