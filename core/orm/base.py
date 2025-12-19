@@ -282,6 +282,8 @@ class BaseModel(metaclass=MetaModel):
                     elif field.type == 'text': col_type = "TEXT"
                     elif field.type == 'boolean': col_type = "BOOLEAN"
                     elif field.type == 'float': col_type = "FLOAT"
+                    elif field.type == 'binary': col_type = "TEXT"
+                    elif field.type == 'selection': col_type = "VARCHAR"
                     elif field.type == 'many2one': col_type = "INTEGER" # FK TODO
                     
                     cur.execute(sql.SQL("ALTER TABLE {} ADD COLUMN {} {}").format(

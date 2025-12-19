@@ -77,6 +77,11 @@ class Selection(Field):
         super().__init__(string=string, **kwargs)
         self.selection = selection
 
+class Binary(Field):
+    type = 'binary'
+    # In Odoo, binary fields can store large data. 
+    # For now, we map it to TEXT or BYTEA in DB (usually TEXT for base64 in Odoo).
+
 class Many2one(Field):
     type = 'many2one'
     def __init__(self, comodel_name, string=None, **kwargs):
