@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- Wizard Form -->
+  <record id="view_assist_ia_wizard_form" model="ir.ui.view">
+    <field name="name">assist.ia.wizard.form</field>
+    <field name="model">assist.ia.wizard</field>
+    <field name="arch" type="xml">
+      <form string="Asistente IA">
+        <sheet>
+          <group>
+            <field name="agent_id" options="{'no_create': True, 'no_open': True}"/>
+            <field name="ia_conversation_id" readonly="1" optional="hide"/>
+          </group>
+          <div style="display: flex; flex-direction: column; height: 100%;">
+            <!-- Zona scrollable de mensajes -->
+            <div style="flex: 1; overflow-y: auto;">
+              <div class="chatter">
+                <field name="message_ids" order="id asc" widget="one2many_list" nolabel="1" readonly="1">
+                  <tree editable="false" default_order="id asc">
+                    <field name="id" optional="hide"/>
+                    <field name="name" class="html" nolabel="1"/>
+                  </tree>
+                </field>
+              </div>
+            </div>
+            <!-- Caja de texto para nuevo mensaje -->
+            <div class="container">
+              <field
+                name="message"
+                widget="html"
+                placeholder="Escribe un mensaje"
+                class="whatsapp_chat"
+                style="min-height:100px;"
+                readonly="0"
+              />
+            </div>
+            <!-- Botones al pie -->
+            <div>
+              <footer>
+                <button string="Enviar" type="object" name="send_ia_message" class="btn-primary"/>
+                <!-- <button string="Nueva conversación" type="object" name="action_new_conversation" class="btn-primary"/> -->
+                <button string="Cerrar" class="btn-default" special="cancel"/>
+              </footer>
+            </div>
+          </div>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Conversation Views -->
+  <record id="view_ia_conversation_tree" model="ir.ui.view">
+    <field name="name">ia.conversation.tree</field>
+    <field name="model">ia.conversation</field>
+    <field name="arch" type="xml">
+      <tree string="Conversaciones">
+        <field name="id" optional="hide"/>
+        <field name="name" string="Conversación"/>
+        <field name="datetime" string="Fecha"/>
+        <!-- <field name="message_ids" widget="many2many_list"/> -->
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_ia_conversation_form" model="ir.ui.view">
+    <field name="name">ia.conversation.form</field>
+    <field name="model">ia.conversation</field>
+    <field name="arch" type="xml">
+      <form string="Conversación">
+        <header>
+          <button string="💬 IA" name="action_open_conversation" type="object" class="btn-primary"/>
+        </header>
+        <sheet>
+          <group>
+            <!-- Campo principal de la conversación -->
+            <field name="name" string="Título de la conversación" widget="html"/>
+            <field name="datetime" string="Fecha y hora" readonly="True"/>
+          </group>
+            <!-- One2many de mensajes, ordenado por ID descendente -->
+          <notebook>
+            <page name="messages" string="Mensajes">
+              <field name="message_ids" nolabel="1" readonly="True">
+                <tree editable="false" default_order="id asc">
+                  <field name="name" string="Mensaje" class="oe_inline" widget="html"/>
+                  <!-- Añade aquí más campos de tu mensaje, p.ej. date, author, etc. -->
+                </tree>
+              </field>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+
+ <record id="action_ia_conversations" model="ir.actions.act_window">
+    <field name="name">Conversaciones IA</field>
+    <field name="res_model">ia.conversation</field>
+    <field name="view_mode">tree,form</field>
+    <field name="view_id" ref="view_ia_conversation_tree"/>
+    <field name="target">current</field>
+  </record>
+
+  <!-- 2) Menú “Conversaciones” colgado del root de tu módulo -->
+  <menuitem
+    id="menu_mcp_conversaciones"
+    name="Conversaciones"
+    parent="menu_module_mcp_tools_root"
+    sequence="82"/>
+
+  <!-- 3) Submenú que lanza la acción anterior -->
+  <menuitem
+    id="menu_mcp_conversaciones_ia"
+    name="Conversaciones IA"
+    parent="menu_mcp_conversaciones"
+    action="action_ia_conversations"
+    sequence="1"/>
+
+</odoo>

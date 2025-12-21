@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mcp_tools,access_mcp_tools,model_mcp_tools,mcp_tools.group_mcp_only_admin,1,1,1,1
+access_mcp_launcher,access_mcp_launcher,model_mcp_launcher,mcp_tools.group_mcp_only_admin,1,1,1,1
+access_assist_ia_wizard_user,assist.ia.wizard,model_assist_ia_wizard,mcp_tools.group_mcp_only_admin,1,1,1,1
+access_ia_conversation_user,ia.conversation,model_ia_conversation,mcp_tools.group_mcp_only_admin,1,1,1,1
+access_ia_message_user,ia.message,model_ia_message,mcp_tools.group_mcp_only_admin,1,1,1,1
+access_mcp_agent_admin,access_mcp_agent_admin,model_mcp_agent,mcp_tools.group_mcp_only_admin,1,1,1,1
+access_mcp_default_prompt_admin,mcp.default.prompt,model_mcp_default_prompt,mcp_tools.group_mcp_only_admin,1,1,1,1
+

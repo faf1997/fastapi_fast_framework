@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_whatsapp_message_tree" model="ir.ui.view">
+        <field name="name">whatsapp.message.tree</field>
+        <field name="model">whatsapp.message</field>
+        <field name="arch" type="xml">
+            <tree string="WhatsApp Messages">
+                <field name="name" string="Message" />
+                <field name="author_id" string="Author" />
+                <!-- <field name="lead_id" string="Opportunity" /> -->
+                <field name="date" string="Date" />
+                <field name="remote_jid" string="Remote JID" />
+                <field name="status" string="Status" />
+                <field name="message_type" string="Message Type" />
+                <field name="conversation" string="Conversation" />
+                <field name="from_me" string="From Me" />
+                <field name="event" string="Event" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_whatsapp_message_form" model="ir.ui.view">
+        <field name="name">whatsapp.message.form</field>
+        <field name="model">whatsapp.message</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp Message">
+                <sheet>
+                    <group>
+                        <!-- === Columna izquierda === -->
+                        <group>
+                            <field name="name"/>
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <!-- Previsualización de archivos con preview -->
+                            <separator string="Files" invisible="not file_ids"/>
+                                <field name="file_ids"
+                                    nolabel="True"
+                                    widget="many2many_binary"
+                                    options="{
+                                        'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.mp4,.mp3,.avi,.mov,.wmv,.webm,.ogg,.wav',
+                                        'show_preview': true,
+                                        'preview_image': 'image_preview',
+                                        'filename': 'name',
+                                        'mimetype': 'mimetype',
+                                        'size': 'file_size'
+                                    }"/>
+                        </group>
+                        <!-- === Columna derecha === -->
+                        <group>
+                            <field name="message_type"/>
+                            <field name="date"/>
+                            <field name="from_me"/>
+                            <field name="message_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

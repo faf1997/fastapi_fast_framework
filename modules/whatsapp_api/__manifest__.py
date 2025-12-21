@@ -1,0 +1,22 @@
+{
+    "name": "WhatsApp api Integration",
+    "summary": "",
+    "version": "17.0.1.0.1",
+    "category": "CRM",
+    "author": "Fiorentino Francisco",
+    "website": "",
+    "license": "LGPL-3",
+    "depends": ["base"],
+    "data": [
+        "security/ir.model.access.csv",
+        "security/security.xml",
+        # "views/res_user_views.xml",
+        "views/res_company_views.xml",
+        "views/whatsapp_message_views.xml",
+        "views/res_partner_views.xml",
+    ],
+    'post_init_hook':'_create_filtered_numbers',
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+}

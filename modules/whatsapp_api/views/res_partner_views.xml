@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_whatsapp" model="ir.ui.view">
+        <field name="name">res.partner.form.whatsapp</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//form" position="attributes">
+                <attribute name="data-partner-id"><t t-esc="record.id"/></attribute>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                    <page string="WhatsApp" groups="whatsapp_api.group_whatsapp_only_admin">
+                        <group>
+                            <field name="filtered_number" readonly="True"/>
+                        </group>
+                        <group>
+                            <field name="whatsapp_message_ids" readonly="True">
+                            </field>
+                        </group>
+                    </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista árbol -->
+    <record id="view_mcp_tools_tree" model="ir.ui.view">
+        <field name="name">mcp.tools.tree</field>
+        <field name="model">mcp.tools</field>
+        <field name="arch" type="xml">
+            <tree string="MCP Tools" create="true" edit="true" delete="true">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="host"/>
+                <field name="port"/>
+                <field name="transport"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de formulario para repository.path -->
+    <record id="view_mcp_tools_form" model="ir.ui.view">
+    <field name="name">mcp.tools.form</field>
+    <field name="model">mcp.tools</field>
+    <field name="arch" type="xml">
+        <form string="Servidor MCP">
+        <header>
+            <button name="action_launch_mcp"
+                    type="object"
+                    string="Lanzar Servidor MCP"
+                    class="oe_highlight"/>
+            <button name="action_stop_mcp"
+                    type="object"
+                    string="Detener Servidor MCP"
+                    class="oe_highlight"/>
+        </header>
+        <sheet>
+            <group name="data" string="Servidor MCP">
+                <field name="name"/>
+                <field name="temp_file"/>
+                <field name="description"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="host"/>
+                <field name="port"/>
+                <field name="transport"/>
+            <separator/>
+            <field name="agent_ids" widget="many2many_tags" readonly="1"/>
+            </group>
+            <notebook>
+            <page name="python_code" string="Código Python">
+                <field name="python_code" readonly="active" widget="code" options="{'mode': 'python'}" nolabel="1"/>
+            </page>
+            </notebook>
+        </sheet>
+        </form>
+    </field>
+    </record>
+
+
+       <record id="view_mcp_tools_search" model="ir.ui.view">
+            <field name="name">mcp.tools.search</field>
+            <field name="model">mcp.tools</field>
+            <field name="arch" type="xml">
+                <search string="Buscar MCP Tools">
+                    <field name="name" string="Nombre"/>
+                    <field name="description" string="Descripción"/>
+                    <separator/>
+                    <filter string="Activos" name="active" domain="[('active', '=', True)]"/>
+                    <filter string="Inactivos" name="inactive" domain="[('active', '=', False)]"/>
+                    <filter string="Todos" name="all" domain="['|', ('active', '=', True), ('active', '=', False)]"/>
+                    <separator/>
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Estado" name="group_by_active" context="{'group_by': 'active'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_mcp_tools" model="ir.actions.act_window">
+            <field name="name">MCP Tools</field>
+            <field name="res_model">mcp.tools</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_mcp_tools_search"/>
+            <field name="context">{'search_default_all': 1}</field>
+        </record>
+
+    <!-- Acción para Repository Path -->
+    <record id="action_mcp_tools" model="ir.actions.act_window">
+        <field name="name">Mcp tools</field>
+        <field name="res_model">mcp.tools</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_mcp_tools_tree"/>
+        <!-- <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+
+            </p>
+        </field> -->
+    </record>
+
+    <!-- Menú principal -->
+    <menuitem id="menu_module_mcp_tools_root" name="MCP" sequence="20" web_icon="mcp_tools,static/description/icon.png"/>
+
+    <!-- Menú de mcp tools principal -->
+    <menuitem id="menu_mcp_tools_root" name="MCP Tools" action="action_mcp_tools"  parent="menu_module_mcp_tools_root" sequence="21" />
+
+    <!-- MCP Agent Views -->
+    <!-- Tree View -->
+    <record id="view_mcp_agent_tree" model="ir.ui.view">
+        <field name="name">mcp.agent.tree</field>
+        <field name="model">mcp.agent</field>
+        <field name="arch" type="xml">
+            <tree string="MCP Agents">
+                <field name="name"/>
+                <field name="llm_model_name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_mcp_agent_form" model="ir.ui.view">
+        <field name="name">mcp.agent.form</field>
+        <field name="model">mcp.agent</field>
+        <field name="arch" type="xml">
+            <form string="MCP Agent">
+                <sheet>
+                    <group> <!-- Group for fields that should remain outside/above the notebook -->
+                        <field name="name"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <notebook>
+                        <page string="General Configuration" name="general_config">
+                            <group>
+                                <group string="LLM Setup">
+                                    <field name="llm_model_name"/>
+                                </group>
+                                <group string="Provider Details">
+                                    <field name="provider_base_url"/>
+                                    <field name="provider_api_key" password="True"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Tools" name="tools">
+                            <group>
+                                <field name="tool_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+                            </group>
+                        </page>
+                        <page string="Prompts" name="prompts">
+                            <group>
+                                 <field name="default_prompt_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            </group>
+                            <!-- <group string="Prompt Preview" name="prompt_display" invisible="default_prompt_ids == False"> -->
+                            <field name="default_prompt_text" widget="html" nolabel="1" readonly="1" invisible="0"/>
+                            <!-- </group> -->
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Window -->
+    <record id="action_mcp_agent" model="ir.actions.act_window">
+        <field name="name">MCP Agents</field>
+        <field name="res_model">mcp.agent</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_mcp_agent"
+              name="Agents"
+              parent="menu_module_mcp_tools_root"
+              action="action_mcp_agent"
+              sequence="10"/>
+
+    <!-- Default Prompt Views and Menu -->
+    <!-- Tree View for mcp.default.prompt -->
+    <record id="view_mcp_default_prompt_tree" model="ir.ui.view">
+        <field name="name">mcp.default.prompt.tree</field>
+        <field name="model">mcp.default.prompt</field>
+        <field name="arch" type="xml">
+            <tree string="Default Prompts">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View for mcp.default.prompt -->
+    <record id="view_mcp_default_prompt_form" model="ir.ui.view">
+        <field name="name">mcp.default.prompt.form</field>
+        <field name="model">mcp.default.prompt</field>
+        <field name="arch" type="xml">
+            <form string="Default Prompt">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <notebook>
+                        <page name="name" string="Prompt">
+                            <field name="prompt_text" widget="html" options="{'mode': 'python'}" nolabel="1"/>
+                        </page>
+                        <page string="Mensaje iniciador" name="starter_message">
+                                <field name="starter_message" widget="html" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Window for mcp.default.prompt -->
+    <record id="action_mcp_default_prompt" model="ir.actions.act_window">
+        <field name="name">Default Prompts</field>
+        <field name="res_model">mcp.default.prompt</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Configuration Submenu (parent for Default Prompts) -->
+    <menuitem
+        id="menu_mcp_tools_configuration"
+        name="Configuración"
+        parent="menu_module_mcp_tools_root"
+        sequence="90"/>
+
+    <!-- Menu Item for Default Prompts -->
+    <menuitem
+        id="menu_mcp_default_prompt"
+        name="Default Prompts"
+        action="action_mcp_default_prompt"
+        parent="menu_mcp_tools_configuration"
+        sequence="10"/>
+
+</odoo>
