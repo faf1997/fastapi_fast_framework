@@ -9,3 +9,4 @@ phonenumbers
 pydantic
 pydantic-ai
 openai
+mcp
